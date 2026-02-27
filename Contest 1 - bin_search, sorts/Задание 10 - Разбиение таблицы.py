@@ -1,95 +1,64 @@
-def calculate_total_sum(rows, cols):
-    total_elements = rows * cols
-    return total_elements * (total_elements + 1) // 2
+def total_sum(n, m):
+    total_numbers = n * m
+    return total_numbers * (total_numbers + 1) // 2
 
+def vertical_sum(n, m, col):
+    return col * n * (col + 1 + m * n - m) // 2
 
-def calculate_vertical_split_sum(rows, cols, split_col):
-    return split_col * rows * (split_col + 1 + rows * cols - rows) // 2
+def horizontal_sum(n, m, row):
+    return (m * m * row * row + m * row) // 2
 
-
-def find_best_vertical_split(rows, cols, total_sum):
-    left, right = 0, cols
-
-    while left < right - 1:
-        mid = (left + right) // 2
-        current_sum = calculate_vertical_split_sum(rows, cols, mid)
-
-        if current_sum <= total_sum // 2:
-            left = mid
+def best_vertical(n, m, total):
+    lo, hi = 0, m
+    while lo < hi - 1:
+        mid = (lo + hi) // 2
+        if vertical_sum(n, m, mid) <= total // 2:
+            lo = mid
         else:
-            right = mid
+            hi = mid
 
-    return left, right
+    best_diff = 10**30
+    best_col = 0
+    for col in (lo, lo + 1):
+        if col < 0 or col > m:
+            continue
+        s = vertical_sum(n, m, col)
+        diff = abs(s - (total - s))
+        if diff < best_diff:
+            best_diff = diff
+            best_col = col
+    return best_diff, best_col
 
-
-def evaluate_vertical_split(rows, cols, split_col, total_sum):
-    current_sum = calculate_vertical_split_sum(rows, cols, split_col)
-    difference = abs(current_sum - (total_sum - current_sum))
-    return difference, split_col, 'V'
-
-
-def calculate_horizontal_split_sum(rows, cols, split_row):
-    return (cols * cols * split_row * split_row + cols * split_row) // 2
-
-
-def find_best_horizontal_split(rows, cols, total_sum):
-    left, right = 0, rows
-
-    while left < right - 1:
-        mid = (left + right) // 2
-        current_sum = calculate_horizontal_split_sum(rows, cols, mid)
-
-        if current_sum <= total_sum // 2:
-            left = mid
+def best_horizontal(n, m, total):
+    lo, hi = 0, n
+    while lo < hi - 1:
+        mid = (lo + hi) // 2
+        if horizontal_sum(n, m, mid) <= total // 2:
+            lo = mid
         else:
-            right = mid
+            hi = mid
 
-    return left, right
-
-
-def evaluate_horizontal_split(rows, cols, split_row, total_sum):
-    current_sum = calculate_horizontal_split_sum(rows, cols, split_row)
-    difference = abs(current_sum - (total_sum - current_sum))
-    return difference, split_row, 'H'
-
-
-def find_optimal_split(rows, cols):
-    total_sum = calculate_total_sum(rows, cols)
-    best_difference = float('inf')
-    best_split_type = 'V'
-    best_split_index = 0
-
-    left_split, right_split = find_best_vertical_split(rows, cols, total_sum)
-
-    for split_col in (left_split, right_split):
-        if 0 <= split_col <= cols:
-            difference, index, split_type = evaluate_vertical_split(rows, cols, split_col, total_sum)
-            if difference < best_difference:
-                best_difference = difference
-                best_split_type = split_type
-                best_split_index = index
-
-    top_split, bottom_split = find_best_horizontal_split(rows, cols, total_sum)
-
-    for split_row in (top_split, bottom_split):
-        if 0 <= split_row <= rows:
-            difference, index, split_type = evaluate_horizontal_split(rows, cols, split_row, total_sum)
-            if difference < best_difference:
-                best_difference = difference
-                best_split_type = split_type
-                best_split_index = index
-
-    return best_split_type, best_split_index + 1
+    best_diff = 10**30
+    best_row = 0
+    for row in (lo, lo + 1):
+        if row < 0 or row > n:
+            continue
+        s = horizontal_sum(n, m, row)
+        diff = abs(s - (total - s))
+        if diff < best_diff:
+            best_diff = diff
+            best_row = row
+    return best_diff, best_row
 
 
-def process_test_case():
-    rows, cols = map(int, input().split())
-    split_type, split_index = find_optimal_split(rows, cols)
-    print(f"{split_type} {split_index}")
+t = int(input())
+for _ in range(t):
+    n, m = map(int, input().split())
+    total = total_sum(n, m)
+    diff_v, col = best_vertical(n, m, total)
+    diff_h, row = best_horizontal(n, m, total)
 
-
-
-test_cases = int(input())
-
-for _ in range(test_cases):
-    process_test_case()
+    if diff_v <= diff_h:
+        print(f"V {col + 1}")
+    else:
+        print(f"H {row + 1}")
